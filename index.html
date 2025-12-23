@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Mensagens Rápidas</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <header>
+        <div class="header-brand">
+            <img src="LOGO.PNG" alt="Logo COPOM" class="header-logo">
+            <h1>NOTAS 190 COPOM SP</h1>
+        </div>
+        <div class="header-actions">
+            <button id="settings-toggle" class="icon-btn" aria-label="Personalizar Cores">
+                <i class="fas fa-palette"></i>
+            </button>
+            <button id="admin-toggle" class="icon-btn" aria-label="Administração">
+                <i class="fas fa-lock"></i>
+            </button>
+        </div>
+    </header>
+
+    <main id="button-grid" class="grid-container">
+        <!-- Buttons will be injected here by JS -->
+    </main>
+
+    <footer class="marquee-footer">
+        <div class="marquee-content">
+            CRIADO POR SETOR DE TECNOLOGIA, CAP PM JORGE, SGT ALAN, CB PM SALES LIMA, CB PM PIVARO
+        </div>
+    </footer>
+
+    <!-- Floating Action Button for Adding (Visible only in admin mode) -->
+    <button id="add-btn" class="fab hidden" aria-label="Adicionar Nova Mensagem">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <!-- Modal for Edit/Create -->
+    <div id="modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 id="modal-title">Editar Botão</h2>
+            <form id="msg-form">
+                <input type="hidden" id="msg-id">
+                
+                <div class="form-group">
+                    <label for="msg-label">Rótulo do Botão</label>
+                    <input type="text" id="msg-label" required placeholder="Ex: Bom dia">
+                </div>
+
+                <div class="form-group">
+                    <label for="msg-text">Mensagem (Copiada ao clicar)</label>
+                    <textarea id="msg-text" required placeholder="Ex: Olá! Como posso ajudar hoje?"></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" id="delete-btn" class="btn-danger hidden">Deletar</button>
+                    <div class="spacer"></div>
+                    <button type="button" id="cancel-btn" class="btn-secondary">Cancelar</button>
+                    <button type="submit" id="save-btn" class="btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">Copiado!</div>
+
+    <!-- Global Tooltip Container -->
+    <div id="global-tooltip" class="hidden"></div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Personalizar Cores</h2>
+            <form id="settings-form">
+                <div class="color-input-group">
+                    <label for="color-page-bg">Cor de Fundo da Página</label>
+                    <input type="color" id="color-page-bg" value="#f4f4f4">
+                </div>
+                <div class="color-input-group">
+                    <label for="color-bg">Cor do Botão (Fundo)</label>
+                    <input type="color" id="color-bg" value="#ffffff">
+                </div>
+                <div class="color-input-group">
+                    <label for="color-text">Cor do Texto</label>
+                    <input type="color" id="color-text" value="#333333">
+                </div>
+                <div class="color-input-group">
+                    <label for="color-active">Cor ao Clicar (Ativo)</label>
+                    <input type="color" id="color-active" value="#2ecc71">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="reset-colors-btn" class="btn-danger">Restaurar Padrão</button>
+                    <div class="spacer"></div>
+                    <button type="button" id="close-settings-btn" class="btn-primary">Fechar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js" type="module"></script>
+</body>
+</html>
