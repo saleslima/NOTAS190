@@ -80,6 +80,65 @@ h1 {
     background: rgba(0,0,0,0.05);
 }
 
+/* Category Navigation */
+.category-nav {
+    display: flex;
+    overflow-x: auto;
+    padding: 0.5rem 1rem;
+    background: rgba(0,0,0,0.03);
+    gap: 0.8rem;
+    scrollbar-width: none; /* Firefox */
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+.category-nav::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+
+.nav-item {
+    background: var(--white);
+    border: 1px solid #ddd;
+    padding: 0.6rem 1.2rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+    color: var(--dark);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.nav-item:hover {
+    background: #eaeaea;
+}
+
+.nav-item.active {
+    background: var(--primary);
+    color: var(--white);
+    border-color: var(--primary);
+}
+
+.add-cat-btn {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--success);
+    color: white;
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    font-size: 1rem;
+}
+
+.add-cat-btn:hover {
+    transform: scale(1.05);
+}
+
 /* Grid Container */
 .grid-container {
     flex: 1;

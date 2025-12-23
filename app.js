@@ -1,5 +1,6 @@
 const PASSWORD = "subtop";
-const STORAGE_KEY = "quick_msg_buttons_v2";
+const STORAGE_KEY_V2 = "quick_msg_buttons_v2";
+const STORAGE_KEY_V3 = "quick_msg_data_v3";
 const SETTINGS_KEY = "quick_msg_settings_v1";
 
 // Default settings
@@ -10,8 +11,7 @@ const DEFAULT_COLORS = {
     active: "#2ecc71"
 };
 
-// Default data if storage is empty
-const DEFAULT_BUTTONS = [
+const DEFAULT_ITEMS = [
     { id: '1', label: 'Motivo de Não Disponível (Agent-MICC)', message: 'Lembre-se de alterar seu status quando se ausentar para pausas ou ao terminar o cadastro de ocorrência.' },
     { id: '2', label: 'Posatende', message: 'Informe ao supervisor que o contato foi encerrado e você está finalizando a ocorrência no sistema.' },
     { id: '3', label: 'Comunicação com Supervisão', message: 'Ao informar à supervisão, sempre comece com o número do talão e, em seguida, o contexto da ocorrência.' },
@@ -54,18 +54,53 @@ const DEFAULT_BUTTONS = [
     { id: '40', label: 'Encerramento de Escala', message: 'Realize o encerramento da sua escala de atendimento conforme a programação.' }
 ];
 
-// State
-let buttons = JSON.parse(localStorage.getItem(STORAGE_KEY)) || DEFAULT_BUTTONS;
+// State & Migration Logic
+let categories = loadData();
+let activeCategoryId = categories.length > 0 ? categories[0].id : null;
 let userSettings = JSON.parse(localStorage.getItem(SETTINGS_KEY)) || DEFAULT_COLORS;
 let isAdmin = false;
 
+function loadData() {
+    // Try loading V3 data
+    const v3Data = localStorage.getItem(STORAGE_KEY_V3);
+    if (v3Data) {
+        return JSON.parse(v3Data);
+    }
+
+    // Fallback: Check for V2 data and migrate
+    const v2Data = localStorage.getItem(STORAGE_KEY_V2);
+    let items = DEFAULT_ITEMS;
+    
+    if (v2Data) {
+        try {
+            items = JSON.parse(v2Data);
+        } catch (e) {
+            console.error("Error migrating V2 data", e);
+        }
+    }
+
+    // Create default structure
+    const initialData = [
+        {
+            id: 'default_notas190',
+            name: 'NOTAS 190',
+            items: items
+        }
+    ];
+    
+    // Save as V3
+    localStorage.setItem(STORAGE_KEY_V3, JSON.stringify(initialData));
+    return initialData;
+}
+
 // DOM Elements
 const grid = document.getElementById('button-grid');
+const nav = document.getElementById('category-nav');
 const adminToggle = document.getElementById('admin-toggle');
 const settingsToggle = document.getElementById('settings-toggle');
 const addBtn = document.getElementById('add-btn');
 
-// CRUD Modal Elements
+// CRUD Button Modal Elements
 const modal = document.getElementById('modal');
 const modalTitle = document.getElementById('modal-title');
 const form = document.getElementById('msg-form');
@@ -74,6 +109,12 @@ const labelInput = document.getElementById('msg-label');
 const textInput = document.getElementById('msg-text');
 const deleteBtn = document.getElementById('delete-btn');
 const cancelBtn = document.getElementById('cancel-btn');
+
+// Category Modal Elements
+const catModal = document.getElementById('cat-modal');
+const catForm = document.getElementById('cat-form');
+const catNameInput = document.getElementById('cat-name');
+const catCancelBtn = document.getElementById('cat-cancel-btn');
 
 // Settings Modal Elements
 const settingsModal = document.getElementById('settings-modal');
@@ -90,15 +131,49 @@ const globalTooltip = document.getElementById('global-tooltip');
 // Initialize
 function init() {
     applySettings();
-    render();
+    renderAll();
     setupEventListeners();
 }
 
-// Render Buttons
-function render() {
+function renderAll() {
+    renderCategories();
+    renderButtons();
+}
+
+// Render Categories (Menu)
+function renderCategories() {
+    nav.innerHTML = '';
+    
+    categories.forEach(cat => {
+        const navItem = document.createElement('button');
+        navItem.className = `nav-item ${cat.id === activeCategoryId ? 'active' : ''}`;
+        navItem.textContent = cat.name;
+        navItem.addEventListener('click', () => {
+            activeCategoryId = cat.id;
+            renderAll();
+        });
+        nav.appendChild(navItem);
+    });
+
+    // Add Category Button (Only if admin)
+    if (isAdmin) {
+        const addCatBtn = document.createElement('button');
+        addCatBtn.className = 'add-cat-btn';
+        addCatBtn.innerHTML = '<i class="fas fa-plus"></i>';
+        addCatBtn.title = "Nova Categoria";
+        addCatBtn.addEventListener('click', openCategoryModal);
+        nav.appendChild(addCatBtn);
+    }
+}
+
+// Render Buttons for Active Category
+function renderButtons() {
     grid.innerHTML = '';
     
-    buttons.forEach(btn => {
+    const currentCategory = categories.find(c => c.id === activeCategoryId);
+    if (!currentCategory) return;
+
+    currentCategory.items.forEach(btn => {
         const buttonEl = document.createElement('div');
         buttonEl.className = 'msg-btn';
         buttonEl.setAttribute('role', 'button');
@@ -230,11 +305,15 @@ function saveButton(e) {
 
     if (!label || !message) return;
 
+    const catIndex = categories.findIndex(c => c.id === activeCategoryId);
+    if (catIndex === -1) return;
+
     if (id) {
-        // Update existing
-        const index = buttons.findIndex(b => b.id === id);
+        // Update existing in current category
+        const items = categories[catIndex].items;
+        const index = items.findIndex(b => b.id === id);
         if (index !== -1) {
-            buttons[index] = { id, label, message };
+            items[index] = { id, label, message };
         }
     } else {
         // Create new
@@ -243,26 +322,59 @@ function saveButton(e) {
             label,
             message
         };
-        buttons.push(newBtn);
+        categories[catIndex].items.push(newBtn);
     }
 
     saveToStorage();
-    render();
+    renderAll();
     closeModal();
 }
 
 function deleteButton() {
     const id = msgIdInput.value;
+    const catIndex = categories.findIndex(c => c.id === activeCategoryId);
+    if (catIndex === -1) return;
+
     if (id && confirm("Tem certeza que deseja excluir este botão?")) {
-        buttons = buttons.filter(b => b.id !== id);
+        categories[catIndex].items = categories[catIndex].items.filter(b => b.id !== id);
         saveToStorage();
-        render();
+        renderAll();
         closeModal();
     }
 }
 
+// Category CRUD
+function openCategoryModal() {
+    catModal.classList.remove('hidden');
+    catNameInput.value = '';
+}
+
+function closeCategoryModal() {
+    catModal.classList.add('hidden');
+}
+
+function saveCategory(e) {
+    e.preventDefault();
+    const name = catNameInput.value.trim();
+    if (!name) return;
+
+    const newCat = {
+        id: 'cat_' + Date.now(),
+        name: name,
+        items: []
+    };
+    
+    categories.push(newCat);
+    // Switch to new category
+    activeCategoryId = newCat.id;
+    
+    saveToStorage();
+    renderAll();
+    closeCategoryModal();
+}
+
 function saveToStorage() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(buttons));
+    localStorage.setItem(STORAGE_KEY_V3, JSON.stringify(categories));
 }
 
 // Global Tooltip Logic
@@ -337,19 +449,29 @@ function resetColors() {
 
 // Event Listeners
 function setupEventListeners() {
-    adminToggle.addEventListener('click', toggleAdmin);
+    adminToggle.addEventListener('click', () => {
+        toggleAdmin();
+        renderCategories(); // Re-render to show/hide add category btn
+    });
     settingsToggle.addEventListener('click', openSettings);
     
     addBtn.addEventListener('click', () => {
         if(isAdmin) openModal(); 
     });
 
-    // CRUD Modal Listeners
+    // CRUD Button Modal Listeners
     cancelBtn.addEventListener('click', closeModal);
     form.addEventListener('submit', saveButton);
     deleteBtn.addEventListener('click', deleteButton);
     modal.addEventListener('click', (e) => {
         if (e.target === modal) closeModal();
+    });
+
+    // Category Modal Listeners
+    catCancelBtn.addEventListener('click', closeCategoryModal);
+    catForm.addEventListener('submit', saveCategory);
+    catModal.addEventListener('click', (e) => {
+        if (e.target === catModal) closeCategoryModal();
     });
 
     // Settings Modal Listeners

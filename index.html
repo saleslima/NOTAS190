@@ -12,7 +12,7 @@
     <header>
         <div class="header-brand">
             <img src="LOGO.PNG" alt="Logo COPOM" class="header-logo">
-            <h1>NOTAS 190 COPOM SP</h1>
+            <h1>COPOM SP</h1>
         </div>
         <div class="header-actions">
             <button id="settings-toggle" class="icon-btn" aria-label="Personalizar Cores">
@@ -24,13 +24,17 @@
         </div>
     </header>
 
+    <nav id="category-nav" class="category-nav">
+        <!-- Categories injected by JS -->
+    </nav>
+
     <main id="button-grid" class="grid-container">
         <!-- Buttons will be injected here by JS -->
     </main>
 
     <footer class="marquee-footer">
         <div class="marquee-content">
-            CRIADO POR SETOR DE TECNOLOGIA, CAP PM JORGE, SGT PM JORGE HERMINO, SGT ALAN, CB PM SALES LIMA, CB PM PIVARO
+            CRIADO POR SETOR DE TECNOLOGIA, CAP PM JORGE, SGT ALAN, CB PM SALES LIMA, CB PM PIVARO
         </div>
     </footer>
 
@@ -39,7 +43,7 @@
         <i class="fas fa-plus"></i>
     </button>
 
-    <!-- Modal for Edit/Create -->
+    <!-- Modal for Edit/Create Button -->
     <div id="modal" class="modal hidden">
         <div class="modal-content">
             <h2 id="modal-title">Editar Botão</h2>
@@ -61,6 +65,24 @@
                     <div class="spacer"></div>
                     <button type="button" id="cancel-btn" class="btn-secondary">Cancelar</button>
                     <button type="submit" id="save-btn" class="btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Create Category -->
+    <div id="cat-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Nova Categoria</h2>
+            <form id="cat-form">
+                <div class="form-group">
+                    <label for="cat-name">Nome do Menu</label>
+                    <input type="text" id="cat-name" required placeholder="Ex: Procedimentos">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="cat-cancel-btn" class="btn-secondary">Cancelar</button>
+                    <div class="spacer"></div>
+                    <button type="submit" id="cat-save-btn" class="btn-primary">Criar</button>
                 </div>
             </form>
         </div>
