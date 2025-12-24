@@ -1,3 +1,5 @@
+import Gun from "https://esm.sh/gun";
+
 const PASSWORD = "subtop";
 const STORAGE_KEY_V2 = "quick_msg_buttons_v2";
 const STORAGE_KEY_V3 = "quick_msg_data_v3";
@@ -53,6 +55,10 @@ const DEFAULT_ITEMS = [
     { id: '39', label: 'Gestão de Equipe', message: 'Realize a gestão e o monitoramento da equipe de atendimento.' },
     { id: '40', label: 'Encerramento de Escala', message: 'Realize o encerramento da sua escala de atendimento conforme a programação.' }
 ];
+
+// Gun DB Setup (Public Relay for Sync)
+const gun = Gun(['https://gun-manhattan.herokuapp.com/gun']);
+const appNode = gun.get('copom_notes_190_sync_v1');
 
 // State & Migration Logic
 let categories = loadData();
@@ -133,6 +139,36 @@ function init() {
     applySettings();
     renderAll();
     setupEventListeners();
+    initCloudSync();
+}
+
+function initCloudSync() {
+    // Listen for real-time updates
+    appNode.on((node) => {
+        if (node && node.data) {
+            try {
+                const incomingData = JSON.parse(node.data);
+                // Only update if data is different to prevent loops
+                if (JSON.stringify(incomingData) !== JSON.stringify(categories)) {
+                    categories = incomingData;
+                    
+                    // Validate active category
+                    const currentCatExists = categories.find(c => c.id === activeCategoryId);
+                    if (!currentCatExists && categories.length > 0) {
+                        activeCategoryId = categories[0].id;
+                    } else if (categories.length === 0) {
+                        activeCategoryId = null;
+                    }
+
+                    renderAll();
+                    // Update local storage backup
+                    localStorage.setItem(STORAGE_KEY_V3, JSON.stringify(categories));
+                }
+            } catch (e) {
+                console.error("Sync Error:", e);
+            }
+        }
+    });
 }
 
 function renderAll() {
@@ -374,7 +410,10 @@ function saveCategory(e) {
 }
 
 function saveToStorage() {
-    localStorage.setItem(STORAGE_KEY_V3, JSON.stringify(categories));
+    const dataStr = JSON.stringify(categories);
+    localStorage.setItem(STORAGE_KEY_V3, dataStr);
+    // Push updates to all users
+    appNode.put({ data: dataStr });
 }
 
 // Global Tooltip Logic
