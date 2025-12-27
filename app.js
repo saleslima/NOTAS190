@@ -1,9 +1,24 @@
-import Gun from "https://esm.sh/gun";
+import { initializeApp } from "https://esm.sh/firebase/app";
+import { getFirestore, doc, onSnapshot, setDoc } from "https://esm.sh/firebase/firestore";
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAU65_k8Oa1XuoQVncMI06DPzFjOWR1kTA",
+  authDomain: "aguilera-92c41.firebaseapp.com",
+  projectId: "aguilera-92c41",
+  storageBucket: "aguilera-92c41.firebasestorage.app",
+  messagingSenderId: "860409156098",
+  appId: "1:860409156098:web:7f209ba10e99466fabcd1b"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const DOC_ID = "global_v1";
+const COLLECTION_ID = "copom_data";
 
 const PASSWORD = "subtop";
-const STORAGE_KEY_V2 = "quick_msg_buttons_v2";
-const STORAGE_KEY_V3 = "quick_msg_data_v3";
-const SETTINGS_KEY = "quick_msg_settings_v1";
+const STORAGE_KEY_V3 = "quick_msg_data_v3"; // Local backup
 
 // Default settings
 const DEFAULT_COLORS = {
@@ -56,47 +71,27 @@ const DEFAULT_ITEMS = [
     { id: '40', label: 'Encerramento de Escala', message: 'Realize o encerramento da sua escala de atendimento conforme a programação.' }
 ];
 
-// Gun DB Setup (Public Relay for Sync)
-const gun = Gun(['https://gun-manhattan.herokuapp.com/gun']);
-const appNode = gun.get('copom_notes_190_sync_v1');
-
-// State & Migration Logic
-let categories = loadData();
+// State
+let categories = loadLocalData(); // Load local first for instant render
 let activeCategoryId = categories.length > 0 ? categories[0].id : null;
-let userSettings = JSON.parse(localStorage.getItem(SETTINGS_KEY)) || DEFAULT_COLORS;
+let currentTheme = DEFAULT_COLORS; // Start with defaults
 let isAdmin = false;
 
-function loadData() {
-    // Try loading V3 data
+function loadLocalData() {
+    // Try loading V3 data from local storage as backup/initial state
     const v3Data = localStorage.getItem(STORAGE_KEY_V3);
     if (v3Data) {
         return JSON.parse(v3Data);
     }
 
-    // Fallback: Check for V2 data and migrate
-    const v2Data = localStorage.getItem(STORAGE_KEY_V2);
-    let items = DEFAULT_ITEMS;
-    
-    if (v2Data) {
-        try {
-            items = JSON.parse(v2Data);
-        } catch (e) {
-            console.error("Error migrating V2 data", e);
-        }
-    }
-
-    // Create default structure
-    const initialData = [
+    // Default structure if nothing exists
+    return [
         {
             id: 'default_notas190',
             name: 'NOTAS 190',
-            items: items
+            items: DEFAULT_ITEMS
         }
     ];
-    
-    // Save as V3
-    localStorage.setItem(STORAGE_KEY_V3, JSON.stringify(initialData));
-    return initialData;
 }
 
 // DOM Elements
@@ -136,21 +131,25 @@ const globalTooltip = document.getElementById('global-tooltip');
 
 // Initialize
 function init() {
-    applySettings();
+    applySettings(currentTheme);
     renderAll();
     setupEventListeners();
     initCloudSync();
 }
 
 function initCloudSync() {
-    // Listen for real-time updates
-    appNode.on((node) => {
-        if (node && node.data) {
-            try {
-                const incomingData = JSON.parse(node.data);
-                // Only update if data is different to prevent loops
-                if (JSON.stringify(incomingData) !== JSON.stringify(categories)) {
-                    categories = incomingData;
+    const docRef = doc(db, COLLECTION_ID, DOC_ID);
+    
+    // Listen for real-time updates from Firebase
+    onSnapshot(docRef, (docSnap) => {
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            
+            // Sync Content
+            if (data.categories) {
+                const incomingCategories = data.categories;
+                if (JSON.stringify(incomingCategories) !== JSON.stringify(categories)) {
+                    categories = incomingCategories;
                     
                     // Validate active category
                     const currentCatExists = categories.find(c => c.id === activeCategoryId);
@@ -161,13 +160,25 @@ function initCloudSync() {
                     }
 
                     renderAll();
-                    // Update local storage backup
                     localStorage.setItem(STORAGE_KEY_V3, JSON.stringify(categories));
                 }
-            } catch (e) {
-                console.error("Sync Error:", e);
             }
+
+            // Sync Theme
+            if (data.theme) {
+                currentTheme = data.theme;
+                applySettings(currentTheme);
+                // If settings modal is open, update inputs
+                if (!settingsModal.classList.contains('hidden')) {
+                    loadSettingsToInputs();
+                }
+            }
+        } else {
+            // First run ever for this DB, seed it
+            saveToStorage();
         }
+    }, (error) => {
+        console.error("Firebase Sync Error:", error);
     });
 }
 
@@ -409,11 +420,20 @@ function saveCategory(e) {
     closeCategoryModal();
 }
 
-function saveToStorage() {
-    const dataStr = JSON.stringify(categories);
-    localStorage.setItem(STORAGE_KEY_V3, dataStr);
-    // Push updates to all users
-    appNode.put({ data: dataStr });
+async function saveToStorage() {
+    // Save to LocalStorage (backup)
+    localStorage.setItem(STORAGE_KEY_V3, JSON.stringify(categories));
+    
+    // Save to Firebase
+    try {
+        await setDoc(doc(db, COLLECTION_ID, DOC_ID), {
+            categories: categories,
+            theme: currentTheme
+        });
+    } catch (e) {
+        console.error("Error saving to Firebase:", e);
+        showToast("Erro ao salvar online!");
+    }
 }
 
 // Global Tooltip Logic
@@ -448,11 +468,14 @@ function hideGlobalTooltip() {
 // Settings Logic
 function openSettings() {
     settingsModal.classList.remove('hidden');
-    // Load current settings into inputs
-    colorPageBgInput.value = userSettings.pageBg || DEFAULT_COLORS.pageBg;
-    colorBgInput.value = userSettings.bg;
-    colorTextInput.value = userSettings.text;
-    colorActiveInput.value = userSettings.active;
+    loadSettingsToInputs();
+}
+
+function loadSettingsToInputs() {
+    colorPageBgInput.value = currentTheme.pageBg || DEFAULT_COLORS.pageBg;
+    colorBgInput.value = currentTheme.bg || DEFAULT_COLORS.bg;
+    colorTextInput.value = currentTheme.text || DEFAULT_COLORS.text;
+    colorActiveInput.value = currentTheme.active || DEFAULT_COLORS.active;
 }
 
 function closeSettings() {
@@ -460,30 +483,24 @@ function closeSettings() {
 }
 
 function updateColorSetting(key, value) {
-    userSettings[key] = value;
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(userSettings));
-    applySettings();
+    currentTheme[key] = value;
+    applySettings(currentTheme);
+    saveToStorage(); // Sync theme changes immediately
 }
 
-function applySettings() {
+function applySettings(theme) {
     const root = document.documentElement;
-    root.style.setProperty('--page-bg', userSettings.pageBg || DEFAULT_COLORS.pageBg);
-    root.style.setProperty('--btn-bg', userSettings.bg);
-    root.style.setProperty('--btn-text', userSettings.text);
-    root.style.setProperty('--btn-active', userSettings.active);
+    root.style.setProperty('--page-bg', theme.pageBg || DEFAULT_COLORS.pageBg);
+    root.style.setProperty('--btn-bg', theme.bg || DEFAULT_COLORS.bg);
+    root.style.setProperty('--btn-text', theme.text || DEFAULT_COLORS.text);
+    root.style.setProperty('--btn-active', theme.active || DEFAULT_COLORS.active);
 }
 
 function resetColors() {
-    userSettings = { ...DEFAULT_COLORS };
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(userSettings));
-    
-    // Update inputs
-    colorPageBgInput.value = userSettings.pageBg;
-    colorBgInput.value = userSettings.bg;
-    colorTextInput.value = userSettings.text;
-    colorActiveInput.value = userSettings.active;
-    
-    applySettings();
+    currentTheme = { ...DEFAULT_COLORS };
+    loadSettingsToInputs();
+    applySettings(currentTheme);
+    saveToStorage();
 }
 
 // Event Listeners
