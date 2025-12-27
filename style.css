@@ -188,10 +188,29 @@ h1 {
     border-color: var(--btn-active) !important;
 }
 
+#save-btn {
+    transition: all 0.3s ease;
+}
+
+#save-btn:hover {
+    transform: scale(1.1);
+    background-color: rgba(46, 204, 113, 0.1);
+}
+
 /* Edit Mode Styling */
 body.admin-mode .msg-btn {
     border: 2px dashed var(--primary);
     animation: jiggle 0.3s infinite alternate ease-in-out;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.pulse-animation {
+    animation: pulse 2s infinite;
 }
 
 body.admin-mode .msg-btn::after {

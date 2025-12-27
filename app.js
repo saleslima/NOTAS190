@@ -1,10 +1,12 @@
 import { initializeApp } from "https://esm.sh/firebase/app";
-import { getFirestore, doc, onSnapshot, setDoc } from "https://esm.sh/firebase/firestore";
+import { getAnalytics } from "https://esm.sh/firebase/analytics";
+import { getDatabase, ref, set, onValue } from "https://esm.sh/firebase/database";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAU65_k8Oa1XuoQVncMI06DPzFjOWR1kTA",
   authDomain: "aguilera-92c41.firebaseapp.com",
+  databaseURL: "https://aguilera-92c41-default-rtdb.firebaseio.com",
   projectId: "aguilera-92c41",
   storageBucket: "aguilera-92c41.firebasestorage.app",
   messagingSenderId: "860409156098",
@@ -13,12 +15,13 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const DOC_ID = "global_v1";
-const COLLECTION_ID = "copom_data";
+const analytics = getAnalytics(app);
+const db = getDatabase(app);
+const DB_REF = "copom_data/global_v1";
 
 const PASSWORD = "subtop";
 const STORAGE_KEY_V3 = "quick_msg_data_v3"; // Local backup
+const STORAGE_KEY_THEME = "copom_theme_local"; // Local settings
 
 // Default settings
 const DEFAULT_COLORS = {
@@ -74,8 +77,9 @@ const DEFAULT_ITEMS = [
 // State
 let categories = loadLocalData(); // Load local first for instant render
 let activeCategoryId = categories.length > 0 ? categories[0].id : null;
-let currentTheme = DEFAULT_COLORS; // Start with defaults
+let currentTheme = loadLocalTheme(); // Load local theme
 let isAdmin = false;
+let hasUnsavedChanges = false;
 
 function loadLocalData() {
     // Try loading V3 data from local storage as backup/initial state
@@ -94,11 +98,20 @@ function loadLocalData() {
     ];
 }
 
+function loadLocalTheme() {
+    const themeData = localStorage.getItem(STORAGE_KEY_THEME);
+    if (themeData) {
+        return JSON.parse(themeData);
+    }
+    return { ...DEFAULT_COLORS };
+}
+
 // DOM Elements
 const grid = document.getElementById('button-grid');
 const nav = document.getElementById('category-nav');
 const adminToggle = document.getElementById('admin-toggle');
 const settingsToggle = document.getElementById('settings-toggle');
+const saveBtn = document.getElementById('save-btn');
 const addBtn = document.getElementById('add-btn');
 
 // CRUD Button Modal Elements
@@ -138,15 +151,18 @@ function init() {
 }
 
 function initCloudSync() {
-    const docRef = doc(db, COLLECTION_ID, DOC_ID);
+    const dbRef = ref(db, DB_REF);
     
     // Listen for real-time updates from Firebase
-    onSnapshot(docRef, (docSnap) => {
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            
+    onValue(dbRef, (snapshot) => {
+        const data = snapshot.val();
+        
+        if (data) {
             // Sync Content
             if (data.categories) {
+                // If we have unsaved local changes, do not overwrite them with cloud data
+                if (hasUnsavedChanges) return;
+
                 const incomingCategories = data.categories;
                 if (JSON.stringify(incomingCategories) !== JSON.stringify(categories)) {
                     categories = incomingCategories;
@@ -163,19 +179,9 @@ function initCloudSync() {
                     localStorage.setItem(STORAGE_KEY_V3, JSON.stringify(categories));
                 }
             }
-
-            // Sync Theme
-            if (data.theme) {
-                currentTheme = data.theme;
-                applySettings(currentTheme);
-                // If settings modal is open, update inputs
-                if (!settingsModal.classList.contains('hidden')) {
-                    loadSettingsToInputs();
-                }
-            }
         } else {
             // First run ever for this DB, seed it
-            saveToStorage();
+            saveToCloud();
         }
     }, (error) => {
         console.error("Firebase Sync Error:", error);
@@ -287,7 +293,8 @@ function animateButton(element) {
     }, 4000);
 }
 
-function showToast() {
+function showToast(msg = "Copiado!") {
+    toast.textContent = msg;
     toast.classList.remove('hidden');
     setTimeout(() => {
         toast.classList.add('hidden');
@@ -295,7 +302,7 @@ function showToast() {
 }
 
 // Admin / Auth Logic
-function toggleAdmin() {
+async function toggleAdmin() {
     if (isAdmin) {
         // Logout
         isAdmin = false;
@@ -303,6 +310,12 @@ function toggleAdmin() {
         addBtn.classList.add('hidden');
         const icon = adminToggle.querySelector('i');
         icon.className = 'fas fa-lock';
+
+        // Auto-save on exit (locking) as per previous requirements
+        if (hasUnsavedChanges) {
+            showToast("Salvando alterações...");
+            await saveToCloud();
+        }
     } else {
         // Login attempt
         const input = prompt("Digite a senha de administrador:");
@@ -372,7 +385,7 @@ function saveButton(e) {
         categories[catIndex].items.push(newBtn);
     }
 
-    saveToStorage();
+    markUnsaved();
     renderAll();
     closeModal();
 }
@@ -384,7 +397,7 @@ function deleteButton() {
 
     if (id && confirm("Tem certeza que deseja excluir este botão?")) {
         categories[catIndex].items = categories[catIndex].items.filter(b => b.id !== id);
-        saveToStorage();
+        markUnsaved();
         renderAll();
         closeModal();
     }
@@ -415,25 +428,44 @@ function saveCategory(e) {
     // Switch to new category
     activeCategoryId = newCat.id;
     
-    saveToStorage();
+    markUnsaved();
     renderAll();
     closeCategoryModal();
 }
 
-async function saveToStorage() {
+function markUnsaved() {
+    hasUnsavedChanges = true;
+    // Save locally immediately so refresh doesn't lose data
+    localStorage.setItem(STORAGE_KEY_V3, JSON.stringify(categories));
+    // Show cloud save button
+    saveBtn.classList.remove('hidden');
+    saveBtn.classList.add('pulse-animation');
+}
+
+async function saveToCloud() {
     // Save to LocalStorage (backup)
     localStorage.setItem(STORAGE_KEY_V3, JSON.stringify(categories));
     
-    // Save to Firebase
+    // Save to Firebase (Content Only)
     try {
-        await setDoc(doc(db, COLLECTION_ID, DOC_ID), {
-            categories: categories,
-            theme: currentTheme
+        await set(ref(db, DB_REF), {
+            categories: categories
         });
+        
+        hasUnsavedChanges = false;
+        saveBtn.classList.add('hidden');
+        saveBtn.classList.remove('pulse-animation');
+        showToast("Salvo na nuvem!");
+        return true;
     } catch (e) {
         console.error("Error saving to Firebase:", e);
         showToast("Erro ao salvar online!");
+        return false;
     }
+}
+
+function saveTheme() {
+    localStorage.setItem(STORAGE_KEY_THEME, JSON.stringify(currentTheme));
 }
 
 // Global Tooltip Logic
@@ -485,7 +517,7 @@ function closeSettings() {
 function updateColorSetting(key, value) {
     currentTheme[key] = value;
     applySettings(currentTheme);
-    saveToStorage(); // Sync theme changes immediately
+    saveTheme(); // Save locally immediately
 }
 
 function applySettings(theme) {
@@ -500,7 +532,7 @@ function resetColors() {
     currentTheme = { ...DEFAULT_COLORS };
     loadSettingsToInputs();
     applySettings(currentTheme);
-    saveToStorage();
+    saveTheme();
 }
 
 // Event Listeners
@@ -509,6 +541,8 @@ function setupEventListeners() {
         toggleAdmin();
         renderCategories(); // Re-render to show/hide add category btn
     });
+    
+    saveBtn.addEventListener('click', saveToCloud);
     settingsToggle.addEventListener('click', openSettings);
     
     addBtn.addEventListener('click', () => {
