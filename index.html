@@ -30,9 +30,16 @@
         </div>
     </header>
 
-    <nav id="category-nav" class="category-nav">
-        <!-- Categories injected by JS -->
-    </nav>
+    <div class="nav-wrapper">
+        <div class="nav-scroll-mask">
+            <nav id="category-track" class="category-track">
+                <!-- Categories injected by JS -->
+            </nav>
+        </div>
+        <div id="nav-controls" class="nav-controls hidden">
+            <!-- Admin controls injected by JS -->
+        </div>
+    </div>
 
     <main id="button-grid" class="grid-container">
         <!-- Buttons will be injected here by JS -->
@@ -76,11 +83,12 @@
         </div>
     </div>
 
-    <!-- Modal for Create Category -->
+    <!-- Modal for Create/Edit Category -->
     <div id="cat-modal" class="modal hidden">
         <div class="modal-content">
-            <h2>Nova Categoria</h2>
+            <h2 id="cat-modal-title">Nova Categoria</h2>
             <form id="cat-form">
+                <input type="hidden" id="cat-id">
                 <div class="form-group">
                     <label for="cat-name">Nome do Menu</label>
                     <input type="text" id="cat-name" required placeholder="Ex: Procedimentos">
@@ -88,7 +96,7 @@
                 <div class="modal-actions">
                     <button type="button" id="cat-cancel-btn" class="btn-secondary">Cancelar</button>
                     <div class="spacer"></div>
-                    <button type="submit" id="cat-save-btn" class="btn-primary">Criar</button>
+                    <button type="submit" id="cat-save-btn" class="btn-primary">Salvar</button>
                 </div>
             </form>
         </div>

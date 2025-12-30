@@ -108,7 +108,8 @@ function loadLocalTheme() {
 
 // DOM Elements
 const grid = document.getElementById('button-grid');
-const nav = document.getElementById('category-nav');
+const navTrack = document.getElementById('category-track');
+const navControls = document.getElementById('nav-controls');
 const adminToggle = document.getElementById('admin-toggle');
 const settingsToggle = document.getElementById('settings-toggle');
 const saveBtn = document.getElementById('save-btn');
@@ -126,7 +127,9 @@ const cancelBtn = document.getElementById('cancel-btn');
 
 // Category Modal Elements
 const catModal = document.getElementById('cat-modal');
+const catModalTitle = document.getElementById('cat-modal-title');
 const catForm = document.getElementById('cat-form');
+const catIdInput = document.getElementById('cat-id');
 const catNameInput = document.getElementById('cat-name');
 const catCancelBtn = document.getElementById('cat-cancel-btn');
 
@@ -195,28 +198,59 @@ function renderAll() {
 
 // Render Categories (Menu)
 function renderCategories() {
-    nav.innerHTML = '';
+    navTrack.innerHTML = '';
+    navControls.innerHTML = '';
     
-    categories.forEach(cat => {
-        const navItem = document.createElement('button');
-        navItem.className = `nav-item ${cat.id === activeCategoryId ? 'active' : ''}`;
-        navItem.textContent = cat.name;
-        navItem.addEventListener('click', () => {
-            activeCategoryId = cat.id;
-            renderAll();
+    // Duplicate list for seamless scrolling if we have items
+    if (categories.length > 0) {
+        // Create the items list (duplicated for loop)
+        const itemsToRender = [...categories, ...categories];
+        
+        itemsToRender.forEach((cat) => {
+            const navItem = document.createElement('button');
+            navItem.dataset.realId = cat.id; 
+            navItem.className = `nav-item ${cat.id === activeCategoryId ? 'active' : ''}`;
+            navItem.textContent = cat.name;
+            
+            navItem.addEventListener('click', () => {
+                activeCategoryId = cat.id;
+                renderAll();
+            });
+            navTrack.appendChild(navItem);
         });
-        nav.appendChild(navItem);
-    });
-
-    // Add Category Button (Only if admin)
-    if (isAdmin) {
-        const addCatBtn = document.createElement('button');
-        addCatBtn.className = 'add-cat-btn';
-        addCatBtn.innerHTML = '<i class="fas fa-plus"></i>';
-        addCatBtn.title = "Nova Categoria";
-        addCatBtn.addEventListener('click', openCategoryModal);
-        nav.appendChild(addCatBtn);
     }
+
+    // Admin Controls (Fixed Position)
+    if (isAdmin) {
+        navControls.classList.remove('hidden');
+        
+        // Add Button
+        const addBtn = createCtrlBtn('btn-add-cat', 'fa-plus', 'Nova Categoria', () => openCategoryModal());
+        navControls.appendChild(addBtn);
+
+        // Edit/Delete only if we have a category selected
+        if (activeCategoryId && categories.length > 0) {
+            const editBtn = createCtrlBtn('btn-edit-cat', 'fa-pen', 'Editar Categoria', () => {
+                const cat = categories.find(c => c.id === activeCategoryId);
+                if (cat) openCategoryModal(cat);
+            });
+            navControls.appendChild(editBtn);
+
+            const delBtn = createCtrlBtn('btn-del-cat', 'fa-trash', 'Excluir Categoria', deleteCategory);
+            navControls.appendChild(delBtn);
+        }
+    } else {
+        navControls.classList.add('hidden');
+    }
+}
+
+function createCtrlBtn(className, iconClass, title, onClick) {
+    const btn = document.createElement('button');
+    btn.className = `ctrl-btn ${className}`;
+    btn.innerHTML = `<i class="fas ${iconClass}"></i>`;
+    btn.title = title;
+    btn.addEventListener('click', onClick);
+    return btn;
 }
 
 // Render Buttons for Active Category
@@ -404,9 +438,19 @@ function deleteButton() {
 }
 
 // Category CRUD
-function openCategoryModal() {
+function openCategoryModal(cat = null) {
     catModal.classList.remove('hidden');
-    catNameInput.value = '';
+    if (cat) {
+        // Edit Mode
+        catModalTitle.textContent = "Editar Categoria";
+        catIdInput.value = cat.id;
+        catNameInput.value = cat.name;
+    } else {
+        // Create Mode
+        catModalTitle.textContent = "Nova Categoria";
+        catIdInput.value = '';
+        catNameInput.value = '';
+    }
 }
 
 function closeCategoryModal() {
@@ -416,21 +460,48 @@ function closeCategoryModal() {
 function saveCategory(e) {
     e.preventDefault();
     const name = catNameInput.value.trim();
+    const id = catIdInput.value;
     if (!name) return;
 
-    const newCat = {
-        id: 'cat_' + Date.now(),
-        name: name,
-        items: []
-    };
-    
-    categories.push(newCat);
-    // Switch to new category
-    activeCategoryId = newCat.id;
+    if (id) {
+        // Edit existing
+        const cat = categories.find(c => c.id === id);
+        if (cat) {
+            cat.name = name;
+        }
+    } else {
+        // Create new
+        const newCat = {
+            id: 'cat_' + Date.now(),
+            name: name,
+            items: []
+        };
+        categories.push(newCat);
+        activeCategoryId = newCat.id;
+    }
     
     markUnsaved();
     renderAll();
     closeCategoryModal();
+}
+
+function deleteCategory() {
+    const cat = categories.find(c => c.id === activeCategoryId);
+    if (!cat) return;
+
+    let warning = "Tem certeza que deseja excluir esta categoria?";
+    if (cat.items && cat.items.length > 0) {
+        warning = `ATENÇÃO:\nEsta categoria possui ${cat.items.length} botões associados.\nAo excluir a categoria, TODOS os botões serão apagados permanentemente.\n\nDeseja continuar?`;
+    }
+
+    if (confirm(warning)) {
+        categories = categories.filter(c => c.id !== activeCategoryId);
+        // Reset active category
+        activeCategoryId = categories.length > 0 ? categories[0].id : null;
+        
+        markUnsaved();
+        renderAll();
+    }
 }
 
 function markUnsaved() {

@@ -80,20 +80,50 @@ h1 {
     background: rgba(0,0,0,0.05);
 }
 
-/* Category Navigation */
-.category-nav {
-    display: flex;
-    overflow-x: auto;
-    padding: 0.5rem 1rem;
+/* Category Navigation Wrapper */
+.nav-wrapper {
     background: rgba(0,0,0,0.03);
-    gap: 0.8rem;
-    scrollbar-width: none; /* Firefox */
     border-bottom: 1px solid rgba(0,0,0,0.05);
-    flex-shrink: 0; /* Prevent shrinking */
+    padding: 0.5rem 0;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
 }
 
-.category-nav::-webkit-scrollbar {
-    display: none; /* Chrome/Safari */
+.nav-scroll-mask {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+}
+
+.category-track {
+    display: flex;
+    gap: 1.5rem;
+    padding: 0.5rem 2rem;
+    width: max-content;
+    animation: scroll 40s linear infinite;
+}
+
+.nav-scroll-mask:hover .category-track {
+    animation-play-state: paused;
+}
+
+@keyframes scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+.nav-controls {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0 1rem;
+    border-left: 1px solid #ddd;
+    background: var(--page-bg);
+    z-index: 5;
 }
 
 .nav-item {
@@ -120,24 +150,28 @@ h1 {
     border-color: var(--primary);
 }
 
-.add-cat-btn {
+.ctrl-btn {
     width: 35px;
     height: 35px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--success);
     color: white;
     border: none;
     cursor: pointer;
     flex-shrink: 0;
-    font-size: 1rem;
+    font-size: 0.9rem;
+    transition: transform 0.2s;
 }
 
-.add-cat-btn:hover {
-    transform: scale(1.05);
+.ctrl-btn:hover {
+    transform: scale(1.1);
 }
+
+.btn-add-cat { background: var(--success); }
+.btn-edit-cat { background: var(--primary); }
+.btn-del-cat { background: var(--danger); }
 
 /* Grid Container */
 .grid-container {
