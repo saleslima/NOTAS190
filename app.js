@@ -288,10 +288,19 @@ function handleButtonClick(btnData, element) {
         // Edit mode: open modal
         openModal(btnData);
     } else {
-        // Normal mode: copy text
-        copyToClipboard(btnData.message);
-        animateButton(element);
-        showToast();
+        const msg = btnData.message.trim();
+        // Check if message is a URL (starts with http/https and has no spaces)
+        const isUrl = /^(http|https):\/\/[^ "]+$/.test(msg);
+
+        if (isUrl) {
+            // Open link in new tab instead of copying
+            window.open(msg, '_blank');
+        } else {
+            // Normal mode: copy text
+            copyToClipboard(btnData.message);
+            animateButton(element);
+            showToast();
+        }
     }
 }
 
