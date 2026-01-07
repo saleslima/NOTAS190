@@ -114,6 +114,7 @@ const adminToggle = document.getElementById('admin-toggle');
 const settingsToggle = document.getElementById('settings-toggle');
 const saveBtn = document.getElementById('save-btn');
 const addBtn = document.getElementById('add-btn');
+const searchInput = document.getElementById('search-input');
 
 // CRUD Button Modal Elements
 const modal = document.getElementById('modal');
@@ -193,7 +194,11 @@ function initCloudSync() {
 
 function renderAll() {
     renderCategories();
-    renderButtons();
+    if (searchInput.value.trim()) {
+        performSearch(searchInput.value.trim());
+    } else {
+        renderButtons();
+    }
 }
 
 // Render Categories (Menu)
@@ -214,6 +219,7 @@ function renderCategories() {
             
             navItem.addEventListener('click', () => {
                 activeCategoryId = cat.id;
+                searchInput.value = ''; // Clear search when changing category
                 renderAll();
             });
             navTrack.appendChild(navItem);
@@ -657,6 +663,64 @@ function setupEventListeners() {
     colorActiveInput.addEventListener('input', (e) => updateColorSetting('active', e.target.value));
     
     resetColorsBtn.addEventListener('click', resetColors);
+
+    // Search Listener
+    searchInput.addEventListener('input', (e) => performSearch(e.target.value.trim()));
+}
+
+// Search Logic
+function performSearch(query) {
+    if (!query) {
+        renderButtons();
+        return;
+    }
+
+    const lowerQuery = query.toLowerCase();
+    
+    // Flatten all items from all categories
+    const allItems = [];
+    categories.forEach(cat => {
+        cat.items.forEach(item => {
+            allItems.push(item);
+        });
+    });
+
+    const results = allItems.filter(item => 
+        item.label.toLowerCase().includes(lowerQuery) || 
+        item.message.toLowerCase().includes(lowerQuery)
+    );
+
+    renderSearchResults(results);
+}
+
+function renderSearchResults(items) {
+    grid.innerHTML = '';
+    
+    if (items.length === 0) {
+        grid.innerHTML = '<div class="no-results">Nenhum resultado encontrado.</div>';
+        return;
+    }
+
+    items.forEach(btn => {
+        const buttonEl = document.createElement('div');
+        buttonEl.className = 'msg-btn';
+        buttonEl.setAttribute('role', 'button');
+        buttonEl.dataset.id = btn.id;
+        
+        // Label
+        const span = document.createElement('span');
+        span.textContent = btn.label;
+        buttonEl.appendChild(span);
+
+        // Tooltip Events (Global Tooltip)
+        buttonEl.addEventListener('mouseenter', (e) => showGlobalTooltip(e, btn.message));
+        buttonEl.addEventListener('mouseleave', hideGlobalTooltip);
+
+        // Click Handler
+        buttonEl.addEventListener('click', () => handleButtonClick(btn, buttonEl));
+
+        grid.appendChild(buttonEl);
+    });
 }
 
 // Run
