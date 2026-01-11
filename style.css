@@ -450,6 +450,120 @@ body.admin-mode .msg-btn::after {
 .btn-secondary { background: #eee; color: var(--dark); border: none; padding: 0.8rem 1.5rem; border-radius: 6px; cursor: pointer; }
 .btn-danger { background: var(--danger); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 6px; cursor: pointer; }
 
+.large-modal {
+    max-width: 700px;
+}
+
+/* List View Mode */
+.grid-container.list-view {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.grid-container.list-view .msg-btn {
+    flex-direction: row;
+    justify-content: flex-start;
+    padding: 1rem;
+    min-height: auto;
+    text-align: left;
+}
+
+.grid-container.list-view .msg-btn span {
+    width: 100%;
+}
+
+/* Urgent Marquee */
+.urgent-marquee {
+    background: #ffeb3b;
+    color: #c0392b;
+    padding: 10px 0;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    border-top: 2px solid #c0392b;
+    border-bottom: 2px solid #c0392b;
+    font-weight: 800;
+    font-size: 1.1rem;
+    z-index: 99;
+}
+
+.urgent-content {
+    display: inline-block;
+    white-space: nowrap;
+    animation: marquee-urgent 15s linear infinite, blink 1s step-end infinite;
+    padding-left: 100%;
+    text-transform: uppercase;
+}
+
+@keyframes marquee-urgent {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(-100%, 0); }
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+/* Docs List */
+.docs-list {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    padding: 0.5rem;
+}
+
+.doc-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem;
+    border-bottom: 1px solid #eee;
+    background: #fafafa;
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+}
+
+.doc-item:last-child {
+    margin-bottom: 0;
+}
+
+.doc-info {
+    flex: 1;
+    font-weight: 600;
+}
+
+.doc-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.doc-btn {
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.btn-view { background: var(--primary); color: white; }
+.btn-download { background: var(--success); color: white; }
+.btn-delete-doc { background: var(--danger); color: white; }
+
+.empty-docs {
+    text-align: center;
+    color: #999;
+    padding: 2rem;
+    font-style: italic;
+}
+
 /* Utilities */
 .hidden { display: none !important; }
 

@@ -32,6 +32,15 @@
             <button id="save-btn" class="icon-btn hidden" aria-label="Salvar Alterações" style="color: var(--success);">
                 <i class="fas fa-cloud-upload-alt"></i>
             </button>
+            <button id="view-toggle" class="icon-btn" aria-label="Alterar Visualização">
+                <i class="fas fa-list"></i>
+            </button>
+            <button id="docs-btn" class="icon-btn" aria-label="Documentos">
+                <i class="fas fa-file-alt"></i>
+            </button>
+            <button id="urgent-btn" class="icon-btn" aria-label="Aviso Urgente" style="color: var(--danger);">
+                <i class="fas fa-exclamation-triangle"></i>
+            </button>
             <button id="admin-toggle" class="icon-btn" aria-label="Administração">
                 <i class="fas fa-lock"></i>
             </button>
@@ -53,9 +62,13 @@
         <!-- Buttons will be injected here by JS -->
     </main>
 
+    <div id="urgent-bar" class="urgent-marquee hidden">
+        <div id="urgent-content" class="urgent-content"></div>
+    </div>
+
     <footer class="marquee-footer">
         <div class="marquee-content">
-            CRIADO POR SETOR DE TECNOLOGIA, CAP PM JORGE, SUBTEN PM AGUILERA (VET), SGT ALAN, CB PM SALES LIMA, CB PM PIVARO
+            CRIADO POR SETOR DE TECNOLOGIA, CAP PM JORGE, SGT ALAN, CB PM SALES LIMA, CB PM PIVARO
         </div>
     </footer>
 
@@ -143,6 +156,64 @@
                     <button type="button" id="close-settings-btn" class="btn-primary">Fechar</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Urgent Message Modal -->
+    <div id="urgent-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Mensagem Urgente</h2>
+            <form id="urgent-form">
+                <div class="form-group">
+                    <label for="urgent-input">Mensagem (Deixe em branco para remover)</label>
+                    <textarea id="urgent-input" placeholder="Digite o aviso urgente aqui..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="urgent-cancel-btn" class="btn-secondary">Cancelar</button>
+                    <div class="spacer"></div>
+                    <button type="submit" class="btn-primary">Salvar Aviso</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Docs Modal -->
+    <div id="docs-modal" class="modal hidden">
+        <div class="modal-content large-modal">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>Documentos</h2>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button id="docs-admin-toggle" class="btn-secondary" style="background: #666; color: white;"><i class="fas fa-lock"></i> Admin</button>
+                    <button id="add-doc-btn" class="btn-primary hidden"><i class="fas fa-plus"></i> Novo</button>
+                </div>
+            </div>
+            
+            <div id="docs-list" class="docs-list">
+                <!-- Docs items injected here -->
+                <p class="empty-docs">Nenhum documento disponível.</p>
+            </div>
+
+            <!-- Add Doc Form (Inline hidden) -->
+            <form id="doc-form" class="hidden" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #eee;">
+                <h3>Adicionar Documento</h3>
+                <div class="form-group">
+                    <label>Título</label>
+                    <input type="text" id="doc-title" required placeholder="Ex: Manual 2024">
+                </div>
+                <div class="form-group">
+                    <label>Arquivo PDF</label>
+                    <input type="file" id="doc-file" accept="application/pdf" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="cancel-doc-form" class="btn-secondary">Cancelar</button>
+                    <div class="spacer"></div>
+                    <button type="submit" class="btn-primary">Salvar</button>
+                </div>
+            </form>
+
+            <div class="modal-actions" style="margin-top: 1rem;">
+                <button type="button" id="close-docs-btn" class="btn-secondary" style="width: 100%;">Fechar</button>
+            </div>
         </div>
     </div>
 
