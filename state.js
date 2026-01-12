@@ -18,14 +18,7 @@ export function initLocalState() {
     state.activeCategoryId = state.categories.length > 0 ? state.categories[0].id : null;
     state.currentTheme = loadLocalTheme();
     state.viewMode = localStorage.getItem(STORAGE_KEY_VIEW) || 'grid';
-    state.pageViews = incrementPageViews();
-}
-
-function incrementPageViews() {
-    const currentViews = parseInt(localStorage.getItem(STORAGE_KEY_PAGE_VIEWS) || '0', 10);
-    const newViews = currentViews + 1;
-    localStorage.setItem(STORAGE_KEY_PAGE_VIEWS, newViews.toString());
-    return newViews;
+    state.pageViews = 0; // Will be loaded from Firebase
 }
 
 function loadLocalData() {

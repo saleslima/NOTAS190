@@ -3,7 +3,7 @@ import * as DOM from "./dom.js";
 import * as UI from "./ui.js";
 import { DB_REF, STORAGE_KEY_V3, STORAGE_KEY_VIEW, PASSWORD, DEFAULT_COLORS } from "./constants.js";
 import { db } from "./firebase-setup.js";
-import { ref, set, onValue } from "https://esm.sh/firebase/database";
+import { ref, set, onValue, runTransaction } from "https://esm.sh/firebase/database";
 
 export function init() {
     UI.applySettings(state.currentTheme);
@@ -13,8 +13,19 @@ export function init() {
     initCloudSync();
 }
 
+let hasIncrementedPageViews = false;
+
 export function initCloudSync() {
     const dbRef = ref(db, DB_REF);
+    
+    // Increment page views atomically on first load
+    if (!hasIncrementedPageViews) {
+        hasIncrementedPageViews = true;
+        const pageViewsRef = ref(db, `${DB_REF}/pageViews`);
+        runTransaction(pageViewsRef, (currentValue) => {
+            return (currentValue || 0) + 1;
+        });
+    }
     
     onValue(dbRef, (snapshot) => {
         const data = snapshot.val();
@@ -52,6 +63,12 @@ export function initCloudSync() {
                 state.documents = [];
             }
 
+            // Always update page views display from Firebase
+            if (data.pageViews !== undefined) {
+                state.pageViews = data.pageViews;
+                UI.renderPageViews();
+            }
+
         } else {
             saveToCloud();
         }
@@ -67,7 +84,8 @@ export async function saveToCloud() {
         await set(ref(db, DB_REF), {
             categories: state.categories,
             urgentMessage: state.urgentMessage,
-            documents: state.documents
+            documents: state.documents,
+            pageViews: state.pageViews
         });
         
         state.hasUnsavedChanges = false;
