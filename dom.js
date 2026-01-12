@@ -12,6 +12,7 @@ export const addBtn = document.getElementById('add-btn');
 export const searchInput = document.getElementById('search-input');
 export const urgentBar = document.getElementById('urgent-bar');
 export const urgentContent = document.getElementById('urgent-content');
+export const viewCount = document.getElementById('view-count');
 
 // CRUD Button Modal Elements
 export const modal = document.getElementById('modal');

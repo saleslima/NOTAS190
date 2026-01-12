@@ -281,7 +281,8 @@ export async function saveNewDoc(e) {
         state.documents.push({
             id: Date.now().toString(),
             title,
-            url
+            url,
+            downloadCount: 0
         });
 
         DOM.docForm.classList.add('hidden');
@@ -301,6 +302,43 @@ export function deleteDoc(id) {
         UI.renderDocsList();
         markUnsaved();
         saveToCloud();
+    }
+}
+
+export async function downloadDocAsZip(doc) {
+    try {
+        UI.showToast("Preparando download...");
+        
+        // Fetch the file
+        const response = await fetch(doc.url);
+        const blob = await response.blob();
+        
+        // Create a zip file
+        const zip = new JSZip();
+        const filename = doc.title.replace(/[^a-z0-9]/gi, '_') + '.pdf';
+        zip.file(filename, blob);
+        
+        // Generate the zip
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        
+        // Create download link
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(zipBlob);
+        link.download = doc.title.replace(/[^a-z0-9]/gi, '_') + '.zip';
+        link.click();
+        
+        // Increment download count
+        const docToUpdate = state.documents.find(d => d.id === doc.id);
+        if (docToUpdate) {
+            docToUpdate.downloadCount = (docToUpdate.downloadCount || 0) + 1;
+            UI.renderDocsList();
+            await saveToCloud();
+        }
+        
+        UI.showToast("Download iniciado!");
+    } catch (err) {
+        console.error("Download error", err);
+        alert("Erro ao fazer download.");
     }
 }
 

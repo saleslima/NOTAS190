@@ -5,10 +5,17 @@ import * as Logic from "./logic.js"; // Import logic to bind events
 
 export function renderAll() {
     renderCategories();
+    renderPageViews();
     if (DOM.searchInput.value.trim()) {
         Logic.performSearch(DOM.searchInput.value.trim());
     } else {
         renderButtons();
+    }
+}
+
+export function renderPageViews() {
+    if (DOM.viewCount) {
+        DOM.viewCount.textContent = state.pageViews.toString();
     }
 }
 
@@ -303,17 +310,24 @@ export function renderDocsList() {
         const item = document.createElement('div');
         item.className = 'doc-item';
         
-        let actionsHtml = `
+        const downloadCount = doc.downloadCount || 0;
+        
+        item.innerHTML = `
+            <div class="doc-info">
+                ${doc.title}
+                <div style="font-size: 0.8rem; color: #666; margin-top: 0.3rem;">
+                    <i class="fas fa-download"></i> ${downloadCount} downloads
+                </div>
+            </div>
             <div class="doc-actions">
                 <a href="${doc.url}" target="_blank" class="doc-btn btn-view"><i class="fas fa-eye"></i> Ver</a>
-                <a href="${doc.url}" download class="doc-btn btn-download"><i class="fas fa-download"></i> Baixar</a>
+                <button class="doc-btn btn-download download-zip-btn"><i class="fas fa-download"></i> Baixar</button>
             </div>
         `;
 
-        item.innerHTML = `
-            <div class="doc-info">${doc.title}</div>
-            ${actionsHtml}
-        `;
+        // Add download handler
+        const downloadBtn = item.querySelector('.download-zip-btn');
+        downloadBtn.onclick = () => Logic.downloadDocAsZip(doc);
 
         if (state.isDocsAdmin) {
             const delBtn = document.createElement('button');

@@ -124,6 +124,25 @@ h1 {
     }
 }
 
+.view-counter {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.5rem 0.8rem;
+    background: rgba(0,0,0,0.05);
+    border-radius: 20px;
+    font-size: 0.9rem;
+    color: var(--dark);
+}
+
+.view-counter i {
+    font-size: 1rem;
+}
+
+.view-counter span {
+    font-weight: 600;
+}
+
 .icon-btn {
     background: none;
     border: none;

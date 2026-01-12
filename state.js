@@ -1,4 +1,4 @@
-import { DEFAULT_ITEMS, DEFAULT_COLORS, STORAGE_KEY_V3, STORAGE_KEY_THEME, STORAGE_KEY_VIEW } from "./constants.js";
+import { DEFAULT_ITEMS, DEFAULT_COLORS, STORAGE_KEY_V3, STORAGE_KEY_THEME, STORAGE_KEY_VIEW, STORAGE_KEY_PAGE_VIEWS } from "./constants.js";
 
 export const state = {
     categories: [],
@@ -9,7 +9,8 @@ export const state = {
     documents: [],
     isAdmin: false,
     isDocsAdmin: false,
-    hasUnsavedChanges: false
+    hasUnsavedChanges: false,
+    pageViews: 0
 };
 
 export function initLocalState() {
@@ -17,6 +18,14 @@ export function initLocalState() {
     state.activeCategoryId = state.categories.length > 0 ? state.categories[0].id : null;
     state.currentTheme = loadLocalTheme();
     state.viewMode = localStorage.getItem(STORAGE_KEY_VIEW) || 'grid';
+    state.pageViews = incrementPageViews();
+}
+
+function incrementPageViews() {
+    const currentViews = parseInt(localStorage.getItem(STORAGE_KEY_PAGE_VIEWS) || '0', 10);
+    const newViews = currentViews + 1;
+    localStorage.setItem(STORAGE_KEY_PAGE_VIEWS, newViews.toString());
+    return newViews;
 }
 
 function loadLocalData() {
