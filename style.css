@@ -375,7 +375,7 @@ body.admin-mode .msg-btn::after {
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 50;
+    z-index: 100;
     transition: transform 0.2s;
 }
 
@@ -442,7 +442,7 @@ body.admin-mode .msg-btn::after {
     font-weight: 500;
 }
 
-.form-group input, .form-group textarea {
+.form-group input, .form-group textarea, .form-group select {
     width: 100%;
     padding: 0.8rem;
     border: 1px solid #ddd;
@@ -505,14 +505,19 @@ body.admin-mode .msg-btn::after {
     font-weight: 800;
     font-size: 1.1rem;
     z-index: 99;
+    --blink-speed: 1s;
 }
 
 .urgent-content {
     display: inline-block;
     white-space: nowrap;
-    animation: marquee-urgent 15s linear infinite, blink 1s step-end infinite;
+    animation: marquee-urgent 15s linear infinite, blink var(--blink-speed) step-end infinite;
     padding-left: 100%;
     text-transform: uppercase;
+}
+
+.urgent-marquee.no-blink .urgent-content {
+    animation: marquee-urgent 15s linear infinite;
 }
 
 @keyframes marquee-urgent {

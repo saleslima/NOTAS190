@@ -262,6 +262,13 @@ export function renderUrgentMessage() {
     if (state.urgentMessage) {
         DOM.urgentBar.classList.remove('hidden');
         DOM.urgentContent.textContent = state.urgentMessage;
+        
+        if (state.urgentBlinkSpeed === 'none') {
+            DOM.urgentBar.classList.add('no-blink');
+        } else {
+            DOM.urgentBar.classList.remove('no-blink');
+            DOM.urgentBar.style.setProperty('--blink-speed', state.urgentBlinkSpeed);
+        }
     } else {
         DOM.urgentBar.classList.add('hidden');
         DOM.urgentContent.textContent = '';

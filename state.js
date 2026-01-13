@@ -6,6 +6,7 @@ export const state = {
     currentTheme: {},
     viewMode: 'grid',
     urgentMessage: '',
+    urgentBlinkSpeed: '1s',
     documents: [],
     isAdmin: false,
     isDocsAdmin: false,

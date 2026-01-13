@@ -16,7 +16,7 @@
     <header>
         <div class="header-brand">
             <img src="LOGO.PNG" alt="Logo COPOM" class="header-logo">
-            <h1>ALMANAQUE COPOM SP</h1>
+            <h1>COPOM SP</h1>
         </div>
         
         <div class="header-search-container">
@@ -73,7 +73,7 @@
 
     <footer class="marquee-footer">
         <div class="marquee-content">
-            CRIADO POR SETOR DE TECNOLOGIA, CAP PM JORGE, TEN PM LAURA, SUBTEN PM AGUILERA(vet), SGT PM HERMINO, SGT PM ALAN , CB PM LUANQUE, CB PM JEFERSON, CB PM SALES LIMA, CB PM PIVARO
+            CRIADO POR SETOR DE TECNOLOGIA, CAP PM JORGE, SGT ALAN, CB PM SALES LIMA, CB PM PIVARO
         </div>
     </footer>
 
@@ -172,6 +172,16 @@
                 <div class="form-group">
                     <label for="urgent-input">Mensagem (Deixe em branco para remover)</label>
                     <textarea id="urgent-input" placeholder="Digite o aviso urgente aqui..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="urgent-blink-speed">Velocidade de Piscada</label>
+                    <select id="urgent-blink-speed">
+                        <option value="none">Sem Piscar</option>
+                        <option value="0.5s">Rápida (0.5s)</option>
+                        <option value="1s" selected>Normal (1s)</option>
+                        <option value="2s">Lenta (2s)</option>
+                        <option value="3s">Muito Lenta (3s)</option>
+                    </select>
                 </div>
                 <div class="modal-actions">
                     <button type="button" id="urgent-cancel-btn" class="btn-secondary">Cancelar</button>

@@ -53,6 +53,7 @@ export function initCloudSync() {
 
             if (data.urgentMessage !== undefined) {
                 state.urgentMessage = data.urgentMessage;
+                state.urgentBlinkSpeed = data.urgentBlinkSpeed || '1s';
                 UI.renderUrgentMessage();
             }
 
@@ -84,6 +85,7 @@ export async function saveToCloud() {
         await set(ref(db, DB_REF), {
             categories: state.categories,
             urgentMessage: state.urgentMessage,
+            urgentBlinkSpeed: state.urgentBlinkSpeed,
             documents: state.documents,
             pageViews: state.pageViews
         });
@@ -268,12 +270,14 @@ export function handleUrgentClick() {
     
     DOM.urgentModal.classList.remove('hidden');
     DOM.urgentInput.value = state.urgentMessage;
+    DOM.urgentBlinkSpeed.value = state.urgentBlinkSpeed;
 }
 
 export function saveUrgentMessage(e) {
     e.preventDefault();
     
     state.urgentMessage = DOM.urgentInput.value.trim();
+    state.urgentBlinkSpeed = DOM.urgentBlinkSpeed.value;
     UI.renderUrgentMessage();
     DOM.urgentModal.classList.add('hidden');
     

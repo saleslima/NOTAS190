@@ -45,6 +45,7 @@ export const colorActiveInput = document.getElementById('color-active');
 export const urgentModal = document.getElementById('urgent-modal');
 export const urgentForm = document.getElementById('urgent-form');
 export const urgentInput = document.getElementById('urgent-input');
+export const urgentBlinkSpeed = document.getElementById('urgent-blink-speed');
 export const urgentCancelBtn = document.getElementById('urgent-cancel-btn');
 
 // Docs Modal Elements
