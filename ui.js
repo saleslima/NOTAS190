@@ -257,6 +257,17 @@ export function applyViewMode() {
     icon.className = state.viewMode === 'grid' ? 'fas fa-list' : 'fas fa-th-large';
 }
 
+// Dark Mode
+export function applyDarkMode() {
+    if (state.isDarkMode) {
+        document.body.classList.add('dark-mode');
+    } else {
+        document.body.classList.remove('dark-mode');
+    }
+    const icon = DOM.darkModeToggle.querySelector('i');
+    icon.className = state.isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
+}
+
 // Urgent
 export function renderUrgentMessage() {
     if (state.urgentMessage) {

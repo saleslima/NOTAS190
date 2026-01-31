@@ -1,13 +1,14 @@
 import { state, saveTheme } from "./state.js";
 import * as DOM from "./dom.js";
 import * as UI from "./ui.js";
-import { DB_REF, STORAGE_KEY_V3, STORAGE_KEY_VIEW, PASSWORD, DEFAULT_COLORS } from "./constants.js";
+import { DB_REF, STORAGE_KEY_V3, STORAGE_KEY_VIEW, STORAGE_KEY_DARK_MODE, PASSWORD, DEFAULT_COLORS } from "./constants.js";
 import { db } from "./firebase-setup.js";
 import { ref, set, onValue, runTransaction } from "https://esm.sh/firebase/database";
 
 export function init() {
     UI.applySettings(state.currentTheme);
     UI.applyViewMode();
+    UI.applyDarkMode();
     UI.renderAll();
     setupEventListeners();
     initCloudSync();
@@ -408,6 +409,13 @@ export function toggleViewMode() {
     UI.applyViewMode();
 }
 
+// Dark Mode
+export function toggleDarkMode() {
+    state.isDarkMode = !state.isDarkMode;
+    localStorage.setItem(STORAGE_KEY_DARK_MODE, state.isDarkMode.toString());
+    UI.applyDarkMode();
+}
+
 // Docs Admin Mode
 export function toggleDocsAdmin() {
     if (state.isDocsAdmin) {
@@ -470,6 +478,9 @@ export function setupEventListeners() {
 
     // View Toggle
     DOM.viewToggle.addEventListener('click', toggleViewMode);
+    
+    // Dark Mode Toggle
+    DOM.darkModeToggle.addEventListener('click', toggleDarkMode);
 
     // Urgent
     DOM.urgentBtn.addEventListener('click', handleUrgentClick);

@@ -3,6 +3,7 @@ export const grid = document.getElementById('button-grid');
 export const navTrack = document.getElementById('category-track');
 export const navControls = document.getElementById('nav-controls');
 export const adminToggle = document.getElementById('admin-toggle');
+export const darkModeToggle = document.getElementById('dark-mode-toggle');
 export const settingsToggle = document.getElementById('settings-toggle');
 export const viewToggle = document.getElementById('view-toggle');
 export const urgentBtn = document.getElementById('urgent-btn');

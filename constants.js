@@ -4,6 +4,7 @@ export const STORAGE_KEY_V3 = "quick_msg_data_v3"; // Local backup
 export const STORAGE_KEY_THEME = "copom_theme_local"; // Local settings
 export const STORAGE_KEY_VIEW = "copom_view_mode"; // Local view preference
 export const STORAGE_KEY_PAGE_VIEWS = "copom_page_views"; // Page view counter
+export const STORAGE_KEY_DARK_MODE = "copom_dark_mode"; // Dark mode preference
 
 export const DEFAULT_COLORS = {
     pageBg: "#f4f4f4",

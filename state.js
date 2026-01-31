@@ -1,4 +1,4 @@
-import { DEFAULT_ITEMS, DEFAULT_COLORS, STORAGE_KEY_V3, STORAGE_KEY_THEME, STORAGE_KEY_VIEW, STORAGE_KEY_PAGE_VIEWS } from "./constants.js";
+import { DEFAULT_ITEMS, DEFAULT_COLORS, STORAGE_KEY_V3, STORAGE_KEY_THEME, STORAGE_KEY_VIEW, STORAGE_KEY_PAGE_VIEWS, STORAGE_KEY_DARK_MODE } from "./constants.js";
 
 export const state = {
     categories: [],
@@ -11,7 +11,8 @@ export const state = {
     isAdmin: false,
     isDocsAdmin: false,
     hasUnsavedChanges: false,
-    pageViews: 0
+    pageViews: 0,
+    isDarkMode: false
 };
 
 export function initLocalState() {
@@ -20,6 +21,7 @@ export function initLocalState() {
     state.currentTheme = loadLocalTheme();
     state.viewMode = localStorage.getItem(STORAGE_KEY_VIEW) || 'grid';
     state.pageViews = 0; // Will be loaded from Firebase
+    state.isDarkMode = localStorage.getItem(STORAGE_KEY_DARK_MODE) === 'true';
 }
 
 function loadLocalData() {
