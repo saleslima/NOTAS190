@@ -365,28 +365,7 @@ export async function downloadDocAsZip(doc) {
     }
 }
 
-// Search
-export function performSearch(query) {
-    if (!query) {
-        UI.renderButtons();
-        return;
-    }
 
-    const lowerQuery = query.toLowerCase();
-    const allItems = [];
-    state.categories.forEach(cat => {
-        cat.items.forEach(item => {
-            allItems.push(item);
-        });
-    });
-
-    const results = allItems.filter(item => 
-        item.label.toLowerCase().includes(lowerQuery) || 
-        item.message.toLowerCase().includes(lowerQuery)
-    );
-
-    UI.renderSearchResults(results);
-}
 
 // Settings
 export function updateColorSetting(key, value) {
@@ -474,7 +453,7 @@ export function setupEventListeners() {
     DOM.resetColorsBtn.addEventListener('click', resetColors);
 
     // Search
-    DOM.searchInput.addEventListener('input', (e) => performSearch(e.target.value.trim()));
+    DOM.searchInput.addEventListener('input', (e) => UI.performSearch(e.target.value.trim()));
 
     // View Toggle
     DOM.viewToggle.addEventListener('click', toggleViewMode);
