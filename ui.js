@@ -1,39 +1,16 @@
 import { state } from "./state.js";
 import * as DOM from "./dom.js";
 import { DEFAULT_COLORS } from "./constants.js";
+import * as Logic from "./logic.js"; // Import logic to bind events
 
 export function renderAll() {
     renderCategories();
     renderPageViews();
     if (DOM.searchInput.value.trim()) {
-        performSearch(DOM.searchInput.value.trim());
+        Logic.performSearch(DOM.searchInput.value.trim());
     } else {
         renderButtons();
     }
-}
-
-export function performSearch(query) {
-    if (!query) {
-        renderButtons();
-        return;
-    }
-
-    const lowerQuery = query.toLowerCase();
-    const allItems = [];
-    state.categories.forEach(cat => {
-        if (cat.items && Array.isArray(cat.items)) {
-            cat.items.forEach(item => {
-                allItems.push(item);
-            });
-        }
-    });
-
-    const results = allItems.filter(item => 
-        item.label.toLowerCase().includes(lowerQuery) || 
-        item.message.toLowerCase().includes(lowerQuery)
-    );
-
-    renderSearchResults(results);
 }
 
 export function renderPageViews() {
@@ -105,7 +82,7 @@ export function renderButtons() {
     DOM.grid.innerHTML = '';
     
     const currentCategory = state.categories.find(c => c.id === state.activeCategoryId);
-    if (!currentCategory) return;
+    if (!currentCategory || !currentCategory.items) return;
 
     currentCategory.items.forEach(btn => {
         const buttonEl = createButtonElement(btn);
