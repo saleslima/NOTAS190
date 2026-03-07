@@ -609,13 +609,13 @@ body.admin-mode .msg-btn::after {
 .urgent-content {
     display: inline-block;
     white-space: nowrap;
-    animation: marquee-urgent 15s linear infinite, blink var(--blink-speed) step-end infinite;
+    animation: marquee-urgent 30s linear infinite, blink var(--blink-speed) step-end infinite;
     padding-left: 100%;
     text-transform: uppercase;
 }
 
 .urgent-marquee.no-blink .urgent-content {
-    animation: marquee-urgent 15s linear infinite;
+    animation: marquee-urgent 30s linear infinite;
 }
 
 @keyframes marquee-urgent {
