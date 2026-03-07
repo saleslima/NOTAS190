@@ -54,7 +54,7 @@ export function initCloudSync() {
 
             if (data.urgentMessage !== undefined) {
                 state.urgentMessage = data.urgentMessage;
-                state.urgentBlinkSpeed = data.urgentBlinkSpeed || '1s';
+                state.urgentBlinkSpeed = data.urgentBlinkSpeed || '3s';
                 UI.renderUrgentMessage();
             }
 
