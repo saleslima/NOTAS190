@@ -54,7 +54,7 @@ export function initCloudSync() {
 
             if (data.urgentMessage !== undefined) {
                 state.urgentMessage = data.urgentMessage;
-                state.urgentBlinkSpeed = data.urgentBlinkSpeed || '6s';
+                state.urgentBlinkSpeed = data.urgentBlinkSpeed || '1s';
                 UI.renderUrgentMessage();
             }
 
@@ -424,6 +424,12 @@ export function toggleDarkMode() {
     UI.applyDarkMode();
 }
 
+// Menu Animation
+export function toggleMenuAnimation() {
+    state.isMenuAnimating = !state.isMenuAnimating;
+    UI.applyMenuAnimation();
+}
+
 // Docs Admin Mode
 export function toggleDocsAdmin() {
     if (state.isDocsAdmin) {
@@ -489,6 +495,9 @@ export function setupEventListeners() {
     
     // Dark Mode Toggle
     DOM.darkModeToggle.addEventListener('click', toggleDarkMode);
+    
+    // Menu Animation Toggle
+    DOM.menuPlayToggle.addEventListener('click', toggleMenuAnimation);
 
     // Urgent
     DOM.urgentBtn.addEventListener('click', handleUrgentClick);

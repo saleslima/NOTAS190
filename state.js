@@ -12,7 +12,8 @@ export const state = {
     isDocsAdmin: false,
     hasUnsavedChanges: false,
     pageViews: 0,
-    isDarkMode: false
+    isDarkMode: false,
+    isMenuAnimating: false
 };
 
 export function initLocalState() {

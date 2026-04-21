@@ -268,6 +268,18 @@ export function applyDarkMode() {
     icon.className = state.isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
 }
 
+// Menu Animation
+export function applyMenuAnimation() {
+    const track = DOM.navTrack;
+    if (state.isMenuAnimating) {
+        track.classList.add('playing');
+    } else {
+        track.classList.remove('playing');
+    }
+    const icon = DOM.menuPlayToggle.querySelector('i');
+    icon.className = state.isMenuAnimating ? 'fas fa-pause' : 'fas fa-play';
+}
+
 // Urgent
 export function renderUrgentMessage() {
     if (state.urgentMessage) {
